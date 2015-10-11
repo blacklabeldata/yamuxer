@@ -74,7 +74,7 @@ func (d *dispatcher) Dispatch(g grim.GrimReaper, conn net.Conn) {
 	// Dispatch connection based on first byte
 	ctype := StreamType(buf[0])
 	if handler, ok := d.handlers[ctype]; ok {
-		g.Spawn(func(c context.Context) {
+		g.SpawnFunc(func(c context.Context) {
 			handler.Handle(c, conn)
 		})
 		return
@@ -82,7 +82,7 @@ func (d *dispatcher) Dispatch(g grim.GrimReaper, conn net.Conn) {
 
 	// Process unknown streams if there is an unknown stream handler
 	if d.unknown != nil {
-		g.Spawn(func(c context.Context) {
+		g.SpawnFunc(func(c context.Context) {
 			d.unknown.Handle(c, conn)
 		})
 		return

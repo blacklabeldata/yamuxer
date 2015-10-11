@@ -55,7 +55,7 @@ type yamuxer struct {
 }
 
 func (y *yamuxer) Start() {
-	y.grim.Spawn(y.listen)
+	y.grim.SpawnFunc(y.listen)
 }
 
 func (y *yamuxer) Stop() {
@@ -106,11 +106,11 @@ func (y *yamuxer) handleConn(g grim.GrimReaper, conn net.Conn) {
 	session, _ := yamux.Server(conn, conf)
 
 	streamCh := make(chan net.Conn)
-	g.Spawn(processStreams(g.New(), conn, streamCh, y.dispatcher))
-	g.Spawn(acceptStreams(y.logger, session, streamCh))
+	g.SpawnFunc(processStreams(g.New(), conn, streamCh, y.dispatcher))
+	g.SpawnFunc(acceptStreams(y.logger, session, streamCh))
 }
 
-func processStreams(g grim.GrimReaper, conn net.Conn, streamCh chan net.Conn, dispatcher Dispatcher) grim.Task {
+func processStreams(g grim.GrimReaper, conn net.Conn, streamCh chan net.Conn, dispatcher Dispatcher) grim.TaskFunc {
 	return func(ctx context.Context) {
 		defer conn.Close()
 		for {
@@ -127,7 +127,7 @@ func processStreams(g grim.GrimReaper, conn net.Conn, streamCh chan net.Conn, di
 	}
 }
 
-func acceptStreams(logger log.Logger, session *yamux.Session, streamCh chan net.Conn) grim.Task {
+func acceptStreams(logger log.Logger, session *yamux.Session, streamCh chan net.Conn) grim.TaskFunc {
 	return func(ctx context.Context) {
 		defer close(streamCh)
 		for {
