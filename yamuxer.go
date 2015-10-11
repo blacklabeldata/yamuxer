@@ -22,7 +22,7 @@ type Yamuxer interface {
 
 // Config is used to create a new yamuxer.
 type Config struct {
-	Listener   net.TCPListener
+	Listener   *net.TCPListener
 	TLSConfig  *tls.Config
 	Dispatcher Dispatcher
 	Deadline   time.Duration
@@ -46,7 +46,7 @@ func New(context context.Context, c *Config) Yamuxer {
 // yamuxer implements the Yamuxer interface.
 type yamuxer struct {
 	grim       grim.GrimReaper
-	listener   net.TCPListener
+	listener   *net.TCPListener
 	dispatcher Dispatcher
 	deadline   time.Duration
 	tlsConfig  *tls.Config
@@ -61,6 +61,7 @@ func (y *yamuxer) Start() {
 func (y *yamuxer) Stop() {
 	y.grim.Kill()
 	y.grim.Wait()
+	y.listener.Close()
 }
 
 func (y *yamuxer) listen(ctx context.Context) {
