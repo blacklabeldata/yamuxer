@@ -105,7 +105,7 @@ func (y *yamuxer) handleConn(g grim.GrimReaper, conn net.Conn) {
 	conf.LogOutput = y.logOutput
 	session, _ := yamux.Server(conn, conf)
 
-	streamCh := make(chan net.Conn)
+	streamCh := make(chan net.Conn, 1)
 	g.SpawnFunc(processStreams(g.New(), conn, streamCh, y.dispatcher))
 	g.SpawnFunc(acceptStreams(y.logger, session, streamCh))
 }
